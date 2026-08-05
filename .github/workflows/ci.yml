@@ -11,8 +11,21 @@ permissions:
 jobs:
   platformio:
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: native-contract-tests
+            command: pio test -e native
+          - name: arduino-esp32
+            command: pio run -e esp32dev
+          - name: native-esp-idf
+            command: pio run -e esp32s3-idf
+          - name: stm32cube-hal
+            command: pio run -e nucleo_f446re
+    name: ${{ matrix.name }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: cp include/secrets.example.h include/secrets.h
       - run: pipx install platformio
-      - run: pio run
+      - run: ${{ matrix.command }}
