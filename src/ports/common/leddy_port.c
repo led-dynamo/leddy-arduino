@@ -1,7 +1,7 @@
 #include "leddy_port.h"
 
+#include <float.h>
 #include <limits.h>
-#include <math.h>
 #include <stdint.h>
 
 const char *leddy_platform_name(leddy_platform_t platform) {
@@ -131,8 +131,8 @@ leddy_validation_t leddy_playback_at(
 
     if (request == NULL || state == NULL || request->display_width == 0u ||
         request->content_width == 0u ||
-        !isfinite((double)request->speed_pixels_per_second) ||
-        request->speed_pixels_per_second <= 0.0f ||
+        !(request->speed_pixels_per_second > 0.0f &&
+          request->speed_pixels_per_second <= FLT_MAX) ||
         request->content_width > (size_t)INT32_MAX) {
         return LEDDY_INVALID_PLAYBACK;
     }
@@ -142,14 +142,19 @@ leddy_validation_t leddy_playback_at(
     }
     travel = request->content_width + (size_t)request->display_width;
 
-    duration = ceil(
+    duration =
         ((double)travel * 1000.0) /
-        (double)request->speed_pixels_per_second
-    );
-    if (!isfinite(duration) || duration < 1.0 || duration > (double)UINT32_MAX) {
+        (double)request->speed_pixels_per_second;
+    if (!(duration >= 1.0 && duration <= (double)UINT32_MAX)) {
         return LEDDY_INVALID_PLAYBACK;
     }
     state->cycle_duration_ms = (uint32_t)duration;
+    if ((double)state->cycle_duration_ms < duration) {
+        if (state->cycle_duration_ms == UINT32_MAX) {
+            return LEDDY_INVALID_PLAYBACK;
+        }
+        state->cycle_duration_ms += 1u;
+    }
 
     switch (request->repeat) {
         case LEDDY_REPEAT_FOREVER:
