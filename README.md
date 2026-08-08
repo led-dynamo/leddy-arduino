@@ -56,6 +56,7 @@ pio run -e esp32s3-idf
 pio run -e nucleo_f446re
 pio test -e native
 bash scripts/test-controller-extraction.sh
+bash scripts/test-controller-artifacts.sh
 ```
 
 Upload by selecting the connected target, for example:
@@ -85,9 +86,23 @@ governance files, and an `docs/ORIGIN.md` migration record. CI runs the
 extraction smoke test so a source change cannot silently make either generated
 repository incomplete.
 
-After the GitHub repositories are created, publish the generated trees first,
-update `leddy-monorepo` to reference them, and only then remove the duplicated
-native port from this repository.
+For a reproducible publication handoff, generate normalized archives plus
+SHA-256 sidecars and a machine-readable manifest:
+
+```sh
+bash scripts/package-controller-artifacts.sh /tmp/leddy-controller-artifacts
+```
+
+That directory contains `leddy-esp32.tar.gz`, `leddy-stm32.tar.gz`, matching
+`.sha256` files, and `controller-artifacts.json`. Archive metadata and gzip
+timestamps are normalized so repeated packaging of the same source commit must
+produce byte-identical archives. `scripts/test-controller-artifacts.sh` enforces
+that property in CI and verifies the expected repository files are present in
+each archive.
+
+After the GitHub repositories are created, verify the checksums, publish the
+generated trees first, update `leddy-monorepo` to reference them, and only then
+remove the duplicated native port from this repository.
 
 ## Wi-Fi provisioning and credentials
 
