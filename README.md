@@ -55,6 +55,7 @@ pio run -e esp32dev
 pio run -e esp32s3-idf
 pio run -e nucleo_f446re
 pio test -e native
+bash scripts/test-controller-extraction.sh
 ```
 
 Upload by selecting the connected target, for example:
@@ -64,6 +65,29 @@ pio run -e esp32dev --target upload
 pio run -e esp32s3-idf --target upload
 pio run -e nucleo_f446re --target upload
 ```
+
+## Standalone controller repository packaging
+
+The native ESP32-S3 and STM32Cube ports are intentionally extraction-ready.
+Until `led-dynamo/leddy-esp32` and `led-dynamo/leddy-stm32` exist, this
+repository remains their canonical source.
+
+Generate either complete repository tree without network access:
+
+```sh
+bash scripts/extract-controller-repo.sh esp32 /tmp/leddy-esp32
+bash scripts/extract-controller-repo.sh stm32 /tmp/leddy-stm32
+```
+
+Each generated tree contains its controller entrypoint, the shared embedded C
+contract layer, host-native tests, PlatformIO configuration, GitHub Actions CI,
+governance files, and an `docs/ORIGIN.md` migration record. CI runs the
+extraction smoke test so a source change cannot silently make either generated
+repository incomplete.
+
+After the GitHub repositories are created, publish the generated trees first,
+update `leddy-monorepo` to reference them, and only then remove the duplicated
+native port from this repository.
 
 ## Wi-Fi provisioning and credentials
 
