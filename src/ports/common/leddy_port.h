@@ -47,11 +47,38 @@ typedef struct {
 } leddy_frame_plan_t;
 
 typedef enum {
+    LEDDY_SCROLL_LEFT = 0,
+    LEDDY_SCROLL_RIGHT = 1,
+} leddy_scroll_direction_t;
+
+typedef enum {
+    LEDDY_REPEAT_ONCE = 0,
+    LEDDY_REPEAT_FOREVER = 1,
+    LEDDY_REPEAT_COUNT = 2,
+} leddy_repeat_mode_t;
+
+typedef struct {
+    size_t content_width;
+    uint16_t display_width;
+    float speed_pixels_per_second;
+    leddy_scroll_direction_t direction;
+    leddy_repeat_mode_t repeat;
+    uint32_t repeat_count;
+} leddy_playback_request_t;
+
+typedef struct {
+    bool active;
+    int32_t offset;
+    uint32_t cycle_duration_ms;
+} leddy_playback_state_t;
+
+typedef enum {
     LEDDY_VALID = 0,
     LEDDY_INVALID_DIMENSIONS,
     LEDDY_UNSUPPORTED_DIMENSIONS,
     LEDDY_INVALID_PIXEL_FORMAT,
     LEDDY_INSUFFICIENT_MEMORY,
+    LEDDY_INVALID_PLAYBACK,
 } leddy_validation_t;
 
 const char *leddy_platform_name(leddy_platform_t platform);
@@ -65,6 +92,11 @@ leddy_validation_t leddy_plan_frame(
     const leddy_display_request_t *request,
     size_t memory_budget_bytes,
     leddy_frame_plan_t *plan
+);
+leddy_validation_t leddy_playback_at(
+    const leddy_playback_request_t *request,
+    uint32_t elapsed_ms,
+    leddy_playback_state_t *state
 );
 
 #ifdef __cplusplus
