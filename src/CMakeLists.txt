@@ -1,0 +1,10 @@
+idf_component_register(
+    SRCS
+        "ports/common/leddy_port.c"
+        "ports/esp32-idf/main.c"
+    INCLUDE_DIRS
+        "ports/common"
+    REQUIRES
+        esp_timer
+        freertos
+)
